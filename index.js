@@ -1,12 +1,7 @@
-const readline = require('readline');
-
-// Criando interface para ler entradas do usuário
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-
 function calcularRanking(vitorias, derrotas) {
+    if (![vitorias, derrotas].every(valor => Number.isSafeInteger(valor) && valor >= 0)) {
+        throw new RangeError('Vitórias e derrotas devem ser inteiros não negativos.');
+    }
     // Calculando o saldo de vitórias
     const saldoVitorias = vitorias - derrotas;
 
@@ -29,17 +24,23 @@ function calcularRanking(vitorias, derrotas) {
     }
 
     // Exibindo a mensagem final
-    return `O Herói tem de saldo de ${saldoVitorias} está no nível de ${nivel}`;
+    return `O Herói tem saldo de ${saldoVitorias} está no nível de ${nivel}`;
 }
 
-// Função para ler as entradas
-rl.question('Digite a quantidade de vitórias: ', (vitorias) => {
-    rl.question('Digite a quantidade de derrotas: ', (derrotas) => {
-        // Convertendo as entradas para inteiros
-        const resultado = calcularRanking(parseInt(vitorias), parseInt(derrotas));
-        console.log(resultado);
-        
-        // Fechando a interface readline
-        rl.close();
+if (require.main === module) {
+    const rl = require('node:readline').createInterface({ input: process.stdin, output: process.stdout });
+    rl.question('Digite a quantidade de vitórias: ', (vitorias) => {
+        rl.question('Digite a quantidade de derrotas: ', (derrotas) => {
+            try {
+                if (![vitorias, derrotas].every(entrada => /^\d+$/.test(entrada.trim()))) {
+                    throw new Error('Vitórias e derrotas devem ser inteiros não negativos.');
+                }
+                console.log(calcularRanking(Number(vitorias), Number(derrotas)));
+            } catch (error) {
+                console.error(error.message);
+                process.exitCode = 1;
+            } finally { rl.close(); }
+        });
     });
-});
+}
+module.exports = { calcularRanking };
